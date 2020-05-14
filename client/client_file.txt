@@ -1,0 +1,1 @@
+LATO CLIENT --> File di Prova per il progetto di Reti.File utilizzato per verificare la lettura, il download e l'upload di file dal server telnet."
