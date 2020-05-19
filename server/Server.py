@@ -11,7 +11,7 @@ class Server:
         server.bind((ip,port))
         server.listen(1)
         self.credentialsFile = '.credentials'
-        self.welcome_message = '\nWelcome to Telnet Server !\r\n\r\nOptions:\r\n\r\n-> 1\tReturn the list of files in the directory\r\n-> 2\tReturn the path of the directory\r\n-> 3\tExecute a command on the Server shell\r\n-> 4\tChange directory\r\n-> 5\tRead the content of a Server file\r\n-> 6\tDownload a file from the Server\r\n-> 7\tUpload a file to the Server\r\n\n-> 0\tClose the connection\r\n'
+        self.welcome_message = '\nWelcome to Telnet Server !\r\n\r\nOptions:\r\n\r\n-> 1\tReturn the list of files in the directory\r\n-> 2\tReturn the path of the directory\r\n-> 3\tExecute a command on the Server shell and get the output\r\n-> 4\tChange directory\r\n-> 5\tRead the content of a Server file\r\n-> 6\tDownload a file from the Server\r\n-> 7\tUpload a file to the Server\r\n\n-> 0\tClose the connection\r\n'
         print("[+] Waiting for connections...")
         self.connection, address = server.accept()
         print("[+] New connection from: {}\n".format(str(address[0])))
@@ -23,7 +23,6 @@ class Server:
         username = self.receive_from_client()
         self.send_to_client("[+] Enter the password : ")
         pwd = self.receive_from_client()
-        print((username, pwd) in self.credentials.items())
         if ((username, pwd) in self.credentials.items()):
             self.send_to_client("[+] Verificate")
             print("[+] Authentication Completed !\n")
@@ -72,9 +71,10 @@ class Server:
         
     def execute_system_command(self,command):
         try:
+            command = command.split(" ")
             result = subprocess.run(command, capture_output=True)
             return str(result.stdout)
-        except subprocess.CalledProcessError:
+        except FileNotFoundError:
             return "[-] Error during command execution !"
         
     def change_dir(self, path):
