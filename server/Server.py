@@ -4,13 +4,14 @@ import socket, os, subprocess, sys, json, base64, ast
 class Server:
     
     def __init__(self,ip,port):
-        os.system("clear")
+        self.clearShell()
         server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         #aggiungo l'opzione che mi permette di riconnettermi e riutilizzare la connessione precedente.
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
         server.bind((ip,port))
         server.listen(1)
-        self.credentialsFile = '.credentials'
+        self.credentialsFile = os.path.expanduser('~/.credentials.txt')
+        self.initCredentials(self.credentialsFile)
         self.welcome_message = '\nWelcome to Telnet Server !\r\n\r\nOptions:\r\n\r\n-> 1\tReturn the list of files in the directory\r\n-> 2\tReturn the path of the directory\r\n-> 3\tExecute a command on the Server shell and get the output\r\n-> 4\tChange directory\r\n-> 5\tRead the content of a Server file\r\n-> 6\tDownload a file from the Server\r\n-> 7\tUpload a file to the Server\r\n\n-> 0\tClose the connection\r\n'
         print("[+] Waiting for connections...")
         self.connection, address = server.accept()
@@ -18,7 +19,6 @@ class Server:
     
     def authentication(self):
         print("[+] Starting Authentication....\n")
-        self.credentials = self.getCredentials_from_file()
         self.send_to_client("[+] Enter the username : ")
         username = self.receive_from_client()
         self.send_to_client("[+] Enter the password : ")
@@ -32,7 +32,9 @@ class Server:
             self.send_to_client("\n[-] Authentication Failed !\n[+] Do you want to continue ad register it? [y/n] : ")
             answer = self.receive_from_client()
             if answer !="n":
-                self.addAccount(username, pwd)
+                self.credentials[username] = pwd
+                self.writeCredentialsOnFile(self.credentials)
+                print("[+] Authentication Completed -> new user {} registered ! ".format(username))
             else:
                 print("\n[-] Quitting....\n")
                 self.connection.close()
@@ -42,11 +44,15 @@ class Server:
         with open(self.credentialsFile,'r') as file:
             return ast.literal_eval(file.read())
 
-    def addAccount(self, user, pwd):
-        self.credentials[user] = pwd
+    def initCredentials(self, filePath):
+        if not os.path.exists(self.credentialsFile):
+            startingAccounts = {'admin' : 'admin', 'andrea' : 'prova123'}
+            self.writeCredentialsOnFile(startingAccounts)
+        self.credentials = self.getCredentials_from_file()
+        
+    def writeCredentialsOnFile(self, credentials):
         with open(self.credentialsFile,'w') as file:
-            file.write(str(self.credentials))
-        print("[+] Authentication Completed -> new user {} registered ! ".format(user))
+            file.write(str(credentials))
         
     def send_to_client(self,data):
         self.connection.send(json.dumps(data).encode())
@@ -76,7 +82,10 @@ class Server:
             return str(result.stdout)
         except FileNotFoundError:
             return "[-] Error during command execution !"
-        
+    
+    def clearShell(self):
+        os.system('cls||clear')
+    
     def change_dir(self, path):
         os.chdir(path)
         return "[+] Changed directory to " + path
