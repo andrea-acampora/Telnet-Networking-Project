@@ -27,18 +27,18 @@ class Server:
             self.send_to_client("[+] Verificate")
             print("[+] Authentication Completed !\n")
         else:
-            self.send_to_client("[-] Authentication failed!")
+            self.send_to_client("[-] Authentication failed!\n")
             print("[-] Authentication Failed for user : {} \n".format(username))
             self.send_to_client("\n[-] Authentication Failed !\n[+] Do you want to continue ad register it? [y/n] : ")
             answer = self.receive_from_client()
             if answer !="n":
                 self.credentials[username] = pwd
                 self.writeCredentialsOnFile(self.credentials)
-                print("[+] Authentication Completed -> new user {} registered ! ".format(username))
+                print("[+] Authentication Completed -> new user {} registered !\n".format(username))
             else:
                 print("\n[-] Quitting....\n")
                 self.connection.close()
-                sys.exit()        
+                sys.exit()
 
     def getCredentials_from_file(self):
         with open(self.credentialsFile,'r') as file:
@@ -85,14 +85,14 @@ class Server:
             result = subprocess.run(command, capture_output=True)
             return str(result.stdout)
         except FileNotFoundError:
-            return "[-] Error in command execution on Server !"
+            return "[-] Error in command execution on Server !\n"
     
     def clearShell(self):
         os.system('cls||clear')
     
     def change_dir(self, path):
         os.chdir(path)
-        return "[+] Changed directory to " + path
+        return "[+] Changed directory to " + path +"\n"
 
     def run(self):
         self.authentication()
