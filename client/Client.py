@@ -96,6 +96,6 @@ try:
 	client = Client()
 	client.run()
 except Exception: #per non mostrare messagio di errore se non ce un server
-    client.clearShell()
+    os.system('cls||clear')
     print("[-] Error: No Server found!")
     sys.exit()
