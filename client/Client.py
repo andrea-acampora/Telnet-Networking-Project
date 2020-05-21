@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import socket, subprocess, argparse , os , sys, json, base64
+import socket, subprocess, argparse , os , sys, json
 
 class Client:
 	def __init__(self):
@@ -46,14 +46,20 @@ class Client:
 				continue
 
 	def download_file(self, path, content):
-		with open(path,"w") as file:
-			file.write(content)
-			return "[+] File {}  succesfully downloaded !".format(path)
+		if not "[-]" in content:
+			with open(path,"w") as file:
+				file.write(content)
+				return "[+] File {}  succesfully downloaded !".format(path)
+		else :
+			return content
 
         
 	def upload_file(self, path):
-		with open(path, "r") as file:
-			return str(file.read())	
+		try:
+			with open(path, "r") as file:
+				return str(file.read())	
+		except Exception:
+			return "[-] File Not Found !"
 
 	def clearShell(self):
 		os.system('cls||clear')
@@ -72,22 +78,19 @@ class Client:
 		while True:
 			command = input("\nEnter [0-7] or [help] -> ")
 			try:
-				result = self.execute_on_server(command)
+				server_result = self.execute_on_server(command)
 				if command in ["3","4","5","6","7"]:
-					new_command = input(result)
-					result = self.execute_on_server(new_command)
+					file_name = input(server_result)
+					server_result = self.execute_on_server(file_name)
 					if command =="7":
-						file_content = self.upload_file(new_command)
-						if (file_content):
-							self.send_to_server(file_content)
-							result = self.receive_from_server()
-						else:
-							result = "[-] File not found !"
+						file_content = self.upload_file(file_name)
+						self.send_to_server(file_content)
+						server_result = self.receive_from_server()
 					if command == "6":
-						result = self.download_file(new_command, result)
+						server_result = self.download_file(file_name, server_result)
 			except Exception:
-				result = "[-] Error in command execution "
-			print(result)
+				server_result = "[-] Error in command execution "
+			print(server_result)
 				
 try:
 	client = Client()

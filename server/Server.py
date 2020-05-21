@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import socket, os, subprocess, sys, json, base64, ast
+import socket, os, subprocess, sys, json, ast
 
 class Server:
     
@@ -23,7 +23,7 @@ class Server:
         username = self.receive_from_client()
         self.send_to_client("[+] Enter the password : ")
         pwd = self.receive_from_client()
-        if ((username, pwd) in self.credentials.items()):
+        if (username in self.credentials.keys() and self.credentials[username] == pwd):
             self.send_to_client("[+] Verificate")
             print("[+] Authentication Completed !\n")
         else:
@@ -67,8 +67,12 @@ class Server:
                 continue
     
     def send_file(self, path):
-        with open(path, "r") as file:
-            return str(file.read())
+        try:
+            with open(path, "r") as file:
+                return str(file.read())
+        except FileNotFoundError:
+            return "[-] File Not Found !"
+        
         
     def write_file(self, path, content):
         with open(path, "w") as file:
@@ -81,7 +85,7 @@ class Server:
             result = subprocess.run(command, capture_output=True)
             return str(result.stdout)
         except FileNotFoundError:
-            return "[-] Error during command execution !"
+            return "[-] Error in command execution on Server !"
     
     def clearShell(self):
         os.system('cls||clear')
@@ -104,15 +108,15 @@ class Server:
                     command_result = self.welcome_message
                 elif recived_command == "1":
                     command_result = '\r\n' + str(os.listdir()) + '\r'
-                    print("[+] Sending the list of files in current directory")
+                    print("[+] Sending the list of files in current directory\n")
                 elif recived_command == "2":
                     command_result = '\r\n'+str(os.getcwdb())+'\r'
-                    print("[+] Sending the path of current directory")
+                    print("[+] Sending the path of current directory\n")
                 elif recived_command =="3":
                     self.send_to_client("[+] Enter the command : ")
                     command_name = self.receive_from_client()
                     command_result = self.execute_system_command(command_name)
-                    print("[+] Executing " + str(command_name))
+                    print("[+] Executing command -> {} \n".format(command_name))
                 elif recived_command == "4":
                     self.send_to_client("[+] Enter the name of the directory : ")
                     dir_name = self.receive_from_client()
@@ -122,24 +126,25 @@ class Server:
                     self.send_to_client("[+] Enter the name of the file : ")
                     file_name = self.receive_from_client()
                     command_result = self.send_file(file_name)
-                    print("[+] Sending {} to Client" .format(file_name))
+                    if not "[-]" in command_result:
+                        print("[+] Sending {} to Client\n" .format(file_name))
+                    else :
+                        print("[-] Failed to send {} : File Not Found ! \n".format(file_name))
                 elif recived_command =="7":
                     self.send_to_client("[+] Enter the name of the file to upload: ")
                     file_name = self.receive_from_client()
                     self.send_to_client("[+] Waiting for content of the file")
                     file_content = self.receive_from_client()
-                    command_result = self.write_file(file_name, file_content)
+                    if not "[-]" in file_content:
+                        command_result = self.write_file(file_name, file_content)
+                    else :
+                        command_result = "[-] Failed to upload -> {} : File Not Found !\n".format(file_name)
+                    print(command_result)
                 else:
-                    command_result = "\n[-] Error during command execution !"
+                    command_result = "[-] Command not found !\n"
             except Exception:
-                    command_result = "\n[-] Error during command execution !"
+                    command_result = "\n[-] Error in command execution !\n"
             self.send_to_client(command_result)
-
 
 server = Server("",4444)
 server.run()  
-    
-    
-        
-    
-        

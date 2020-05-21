@@ -2,8 +2,13 @@
 
 Python program used  to establish a client-server connection using sockets.
 
-Usage:
+Usage
 ---
-python3 Server.py to launch the telnet Server on localhost.
 
-python3 Client.py to connect to the Server.
+First run server on localhost with:
+
+python3 Server.py
+
+Then connect to it with:
+
+python3 Client.py 
